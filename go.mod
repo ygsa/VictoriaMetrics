@@ -43,11 +43,14 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
 	cloud.google.com/go/iam v0.7.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.1.1 // indirect
-	go.opentelemetry.io/collector/pdata v0.50.0
-	go.opentelemetry.io/proto/otlp v0.16.0
 )
 
-require google.golang.org/protobuf v1.28.1
+require (
+	github.com/gogo/protobuf v1.3.2
+	github.com/json-iterator/go v1.1.12
+	google.golang.org/grpc v1.51.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
+)
 
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
@@ -72,18 +75,18 @@ require (
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
@@ -102,6 +105,5 @@ require (
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20221109142239-94d6d90a7d66 // indirect
-	google.golang.org/grpc v1.50.1 // indirect
+	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 )
