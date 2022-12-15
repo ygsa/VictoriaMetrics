@@ -438,7 +438,7 @@ The `minimum downtime` strategy has the following benefits comparing to `no down
 
 - It allows performing config update / version upgrade with minimum disruption
   when the previous config / version is incompatible with the new config / version.
-- It allows perorming config update / version upgrade with minimum disruption
+- It allows performing config update / version upgrade with minimum disruption
   when the cluster has no enough compute resources (CPU, RAM, disk IO, network bandwidth)
   for rolling upgrade.
 - It allows minimizing the duration of config update / version ugprade for clusters with big number of nodes
@@ -477,11 +477,14 @@ VictoriaMetrics cluster remains available if the following conditions are met:
 
 The cluster works in the following way when some of `vmstorage` nodes are unavailable:
 
-- `vminsert` re-routes newly ingested data from unavailable `vmstorage` nodes to remaining healthy `vmstorage` nodes.
+- `vminsert` re-routes<sup>*</sup> newly ingested data from unavailable `vmstorage` nodes to remaining healthy `vmstorage` nodes.
   This guarantees that the newly ingested data is properly saved if the healthy `vmstorage` nodes have enough CPU, RAM, disk IO and network bandwidth
   for processing the increased data ingestion workload.
   `vminsert` spreads evenly the additional data among the healthy `vmstorage` nodes in order to spread evenly
   the increased load on these nodes.
+  (*): See also 
+  [-disableRerouting](https://docs.victoriametrics.com/Cluster-VictoriaMetrics.html#list-of-command-line-flags-for-vminsert)
+  flag for configuring behavior if a `vmstorage` node is just slow, not unavailable.
 
 - `vmselect` continues serving queries if at least a single `vmstorage` nodes is available.
   It marks responses as partial for queries served from the remaining healthy `vmstorage` nodes,
