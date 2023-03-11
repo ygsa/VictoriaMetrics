@@ -8,6 +8,15 @@ import (
 	"github.com/valyala/fastjson"
 )
 
+// UnmarshalJSONExportMetricsServiceRequest parses OTLP MetricsServiceRequest from given buffer
+func UnmarshalJSONExportMetricsServiceRequest(buf []byte, m *ExportMetricsServiceRequest) error {
+	v, err := fastjson.ParseBytes(buf)
+	if err != nil {
+		return err
+	}
+	return parseExportMetricsRequest(m, v)
+}
+
 func parseExportMetricsRequest(dst *ExportMetricsServiceRequest, v *fastjson.Value) error {
 	obj, err := v.Object()
 	if err != nil {
@@ -736,12 +745,4 @@ func parseInt64(v *fastjson.Value) (int64, error) {
 	default:
 		return 0, fmt.Errorf("incorrect type for int64 want Number or String, got: %s ", v.Type())
 	}
-}
-
-func UnmarshalJSONExportMetricsServiceRequest(buf []byte, m *ExportMetricsServiceRequest) error {
-	v, err := fastjson.ParseBytes(buf)
-	if err != nil {
-		return err
-	}
-	return parseExportMetricsRequest(m, v)
 }

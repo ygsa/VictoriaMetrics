@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
+
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/decimal"
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/fasttime"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/prompb"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/protoparser/opentelemetry/pb"
@@ -31,12 +35,46 @@ func TestParseStream(t *testing.T) {
 				if len(tss) != len(expectedTss) {
 					t.Fatalf("not expected tss count, got: %d, want: %d", len(tss), len(expectedTss))
 				}
+				sort.Slice(expectedTss, func(i, j int) bool {
+					var n1, n2 string
+					for _, l := range expectedTss[i].Labels {
+						if string(l.Name) == "__name__" {
+							n1 = string(l.Value)
+						}
+					}
+					for _, l := range expectedTss[j].Labels {
+						if string(l.Name) == "__name__" {
+							n2 = string(l.Value)
+						}
+					}
+					return n1 < n2
+				})
+				sort.Slice(tss, func(i, j int) bool {
+					var n1, n2 string
+					for _, l := range tss[i].Labels {
+						if string(l.Name) == "__name__" {
+							n1 = string(l.Value)
+						}
+					}
+					for _, l := range tss[j].Labels {
+						if string(l.Name) == "__name__" {
+							n2 = string(l.Value)
+						}
+					}
+					return n1 < n2
+				})
 				for i := 0; i < len(tss); i++ {
 					ts := tss[i]
 					tsWant := expectedTss[i]
 					if len(ts.Labels) != len(tsWant.Labels) {
 						t.Fatalf("idx: %d, not expected labels count, got: %d, want: %d", i, len(ts.Labels), len(tsWant.Labels))
 					}
+					sort.Slice(ts.Labels, func(i, j int) bool {
+						return string(ts.Labels[i].Name) < string(ts.Labels[j].Name)
+					})
+					sort.Slice(tsWant.Labels, func(i, j int) bool {
+						return string(tsWant.Labels[i].Name) < string(tsWant.Labels[j].Name)
+					})
 					for j, label := range ts.Labels {
 						wantLabel := tsWant.Labels[j]
 						if !reflect.DeepEqual(label, wantLabel) {
@@ -217,4 +255,30 @@ func generateOTLPSamples(srcs ...*pb.Metric) *pb.ResourceMetrics {
 		},
 	}
 	return otlpMetrics
+}
+
+func newPromPBTs(metricName string, t int64, value float64, isStale bool, extraLabels ...prompb.Label) prompb.TimeSeries {
+	if isStale {
+		value = decimal.StaleNaN
+	}
+	if t <= 0 {
+		// Set the current timestamp if t isn't set.
+		t = int64(fasttime.UnixTimestamp()) * 1000
+	}
+	ts := prompb.TimeSeries{
+		Labels: []prompb.Label{
+			{
+				Name:  metricNameLabel,
+				Value: []byte(metricName),
+			},
+		},
+		Samples: []prompb.Sample{
+			{
+				Value:     value,
+				Timestamp: t,
+			},
+		},
+	}
+	ts.Labels = append(ts.Labels, extraLabels...)
+	return ts
 }

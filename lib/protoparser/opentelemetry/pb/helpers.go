@@ -68,6 +68,8 @@ func float64AsString(f float64) string {
 	return string(b)
 }
 
+// Reset resets fields
+// it allows reusing objects without memory allocations
 func (m *ExportMetricsServiceRequest) Reset() {
 	m.unknownFields = m.unknownFields[:0]
 	for i := range m.ResourceMetrics {
@@ -76,6 +78,8 @@ func (m *ExportMetricsServiceRequest) Reset() {
 	m.ResourceMetrics = m.ResourceMetrics[:0]
 }
 
+// Reset resets fields
+// it allows reusing objects without memory allocations
 func (m *ResourceMetrics) Reset() {
 	m.unknownFields = m.unknownFields[:0]
 	m.Resource = nil
@@ -86,6 +90,8 @@ func (m *ResourceMetrics) Reset() {
 	m.SchemaUrl = ""
 }
 
+// Reset resets fields
+// it allows reusing objects without memory allocations
 func (m *ScopeMetrics) Reset() {
 	m.unknownFields = nil
 	m.Scope = nil
