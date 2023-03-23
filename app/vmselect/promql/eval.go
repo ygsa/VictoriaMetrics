@@ -906,7 +906,7 @@ func evalRollupFuncWithSubquery(qt *querytracer.Tracer, ec *EvalConfig, funcName
 		return nil, err
 	}
 
-	seriesByWorkerID := make([]timeseriesWithPadding, 0, netstorage.MaxWorkers())
+	seriesByWorkerID := make([]*timeseriesWithPadding, 0, netstorage.MaxWorkers())
 	for i := 0; i < netstorage.MaxWorkers(); i++ {
 		seriesByWorkerID = append(seriesByWorkerID, getTimeseriesPadded())
 	}
@@ -1208,15 +1208,15 @@ func evalRollupWithIncrementalAggregate(qt *querytracer.Tracer, funcName string,
 
 var tspPool sync.Pool
 
-func getTimeseriesPadded() timeseriesWithPadding {
+func getTimeseriesPadded() *timeseriesWithPadding {
 	v := tspPool.Get()
 	if v == nil {
-		return timeseriesWithPadding{}
+		return &timeseriesWithPadding{}
 	}
-	return v.(timeseriesWithPadding)
+	return v.(*timeseriesWithPadding)
 }
 
-func putTimeseriesPadded(tsp timeseriesWithPadding) {
+func putTimeseriesPadded(tsp *timeseriesWithPadding) {
 	tsp.tss = tsp.tss[:0]
 	tspPool.Put(tsp)
 }
@@ -1234,7 +1234,7 @@ func evalRollupNoIncrementalAggregate(qt *querytracer.Tracer, funcName string, k
 	qt = qt.NewChild("rollup %s() over %d series; rollupConfigs=%s", funcName, rss.Len(), rcs)
 	defer qt.Done()
 
-	seriesByWorkerID := make([]timeseriesWithPadding, 0, netstorage.MaxWorkers())
+	seriesByWorkerID := make([]*timeseriesWithPadding, 0, netstorage.MaxWorkers())
 	for i := 0; i < netstorage.MaxWorkers(); i++ {
 		seriesByWorkerID = append(seriesByWorkerID, getTimeseriesPadded())
 	}
