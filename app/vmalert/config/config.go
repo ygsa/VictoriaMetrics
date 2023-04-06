@@ -2,13 +2,18 @@ package config
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 
@@ -202,6 +207,11 @@ type ValidateTplFn func(annotations map[string]string) error
 func Parse(pathPatterns []string, validateTplFn ValidateTplFn, validateExpressions bool) ([]Group, error) {
 	var fp []string
 	for _, pattern := range pathPatterns {
+		// api for data
+		if strings.HasPrefix(pattern, "http://") || strings.HasPrefix(pattern, "https://") {
+			fp = append(fp, pattern)
+			continue
+		}
 		matches, err := filepath.Glob(pattern)
 		if err != nil {
 			return nil, fmt.Errorf("error reading file pattern %s: %w", pattern, err)
@@ -212,7 +222,13 @@ func Parse(pathPatterns []string, validateTplFn ValidateTplFn, validateExpressio
 	var groups []Group
 	for _, file := range fp {
 		uniqueGroups := map[string]struct{}{}
-		gr, err := parseFile(file)
+		var gr []Group
+		var err error
+		if strings.HasPrefix(file, "http://") || strings.HasPrefix(file, "https://") {
+			gr, err = parseApi(file)
+		} else {
+			gr, err = parseFile(file)
+		}
 		if err != nil {
 			errGroup.Add(fmt.Errorf("failed to parse file %q: %w", file, err))
 			continue
@@ -259,6 +275,41 @@ func parseFile(path string) ([]Group, error) {
 		return nil, err
 	}
 	return g.Groups, checkOverflow(g.XXX, "config")
+}
+
+func parseApi(api string) ([]Group, error) {
+	var g []Group
+	Url, err := url.Parse(api)
+	if err != nil {
+		return g, err
+	}
+	client := &http.Client{
+		Transport: &http.Transport{},
+		Timeout:   time.Second * 10,
+	}
+	resp, err := client.Get(Url.String())
+	if err != nil {
+		return g, err
+	}
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+
+	}(resp.Body)
+	var respStruct struct {
+		Data string
+		Code int
+		Msg  string
+	}
+	body, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &respStruct)
+	if err != nil {
+		return g, err
+	}
+	err = yaml.Unmarshal([]byte(respStruct.Data), &g)
+	if err != nil {
+		return g, err
+	}
+	return g, err
 }
 
 func checkOverflow(m map[string]interface{}, ctx string) error {
